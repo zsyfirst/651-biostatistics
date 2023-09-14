@@ -1,0 +1,125 @@
+---
+title: "651 class"
+author: "Siyu Zou"
+date: "2023-09-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+tq<-qexp(seq(0.01,0.99,length=100), 1/5)
+plot(tq)
+```
+
+# Lecture 1 &2
+## Probability calculus
+```{r birthday problem}
+n=1:364
+pn=n
+for (i in 1:364) {
+  pn[i]<- 1-prod(365:(365-i+1))/365^i
+  }
+
+pn[23]  # 50%
+
+pn[57]  # 99%
+```
+
+```{r ploting birthday problem}
+plot(
+  n[1:100],
+  pn[1:100],
+  type = "p",
+  pch = 19, 
+  col = "red",
+  lwd = 3,
+  xlab = "Number of people in the room",
+  ylab = "Probability of at least two same-day birthdays",
+  cex.lab = 1.5, cex.axis = 1.5, col.axis = "black"
+)
+
+
+```
+
+
+### sample
+```{r Monte Holl problem}
+
+# help on sample
+?sample
+# a random permutation
+x <- sample (1:6)  #  the default for size == the first argument, so that sample(x) generates a random permutation of the elements of x (or 1:x).
+
+# sampling with replacement
+x <- sample ( 1:6, 10, replace=T )  # size = 10
+
+# how many are equal to 3?
+sum ( x == 3 )
+
+# nonparametric bootstrap
+x <- sample ( 1:10, 10, replace=T )
+
+# 100 Bernoulli trials
+sample(c(0,1), 100, replace = TRUE)
+
+```
+
+### Can you write an R code to simulate the Monte Hall problem?
+the answer is in Lab 2 notes
+
+
+## Probability mass function (PMF) for discrete variable
+
+### Bernoulli
+```{r Bernoulli example}
+?rbinom
+# Let X be the result of a single coin flip where X = 0 represents tails and X = 1 represents heads
+
+# for x = 1, 1个硬币(size), 抛20次(n)，每次概率0.5 (p)
+rbinom(20,1,0.5)
+
+rbinom(20, 1, 0.3)
+
+rbinom(20,1,seq(0,1,length=20))
+seq(0,1,length=20)
+
+```
+
+### Poisson
+```{r Poisson example}
+x <- 1:100
+lambda = 20
+plot(x, dpois(x, lambda),type="p",pch=19,
+col="blue",lwd=3, xlab="Number of patients",
+ylab="Probability",cex.lab=1.5,cex.axis=1.5,
+col.axis="blue")
+
+
+?dpois
+
+# sampling the Poisson distribution 
+# A sample of 15 independent days with average number of patients = 20
+rpois(15, lambda=20)
+
+# Reconstructing PMF from samples
+y <- rpois(10000, lambda=20)
+py=rep(0,100)
+for (i in 1:100) {
+  py[i] <- sum(y==i)/10000 
+}
+
+# Add lines to the PMF plot of the Poisson distribution
+plot(x, dpois(x, lambda),type="p",pch=19,
+col="blue",lwd=3, xlab="Number of patients",
+ylab="Probability",cex.lab=1.5,cex.axis=1.5,
+col.axis="blue") + 
+lines(1:100,py,col="red",lwd=3)
+
+```
+
+
+
+
