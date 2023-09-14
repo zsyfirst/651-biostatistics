@@ -1,0 +1,159 @@
+---
+title: "651 lab 2"
+author: "siyu"
+output: html_document
+date: "2023-09-06"
+---
+
+
+# 651 lab
+## lab 2
+
+Inline latex: $\int_{0}^1x^2 dx$
+Indented latex:  $$\int_{0}^1x^2 dx$$
+
+Inline code 'punif'
+
+```{r packages}
+# install.packages(
+#     c("postcards", "usethis", "gitcreds")
+# )
+
+library(usethis)
+use_git_config(user.name = "Siyu Zou", user.email = "zsy861909940@gmail.com")
+
+# usethis::create_project("C:/Users/17103/Desktop/Term 1/651 bios/bios_lab_notes")
+
+usethis::use_git()
+
+``` 
+
+# ggplot2
+the most beautiful ggplot
+```{r ggplot2}
+# install.packages("tidyverse")
+library(ggplot2)
+
+# if you use ggplot, you need use long format data
+# install.packages("reshape2")
+library(reshape2) # package to make data frame for ggplot
+```
+
+```{r data}
+x <- seq(from = 0, to = 15, by = 0.01) # create the input vector
+y1 <- dgamma(x, shape = 1, scale = 1)
+y2 <- dgamma(x, shape = 2, scale = 1)
+y3 <- dgamma(x, shape = 3, scale = 1)
+y4 <- dgamma(x, shape = 2, scale = 2)
+y5 <- dgamma(x, shape = 2, scale = 0.5)
+
+x_length <- length(x)
+plot_df <- data.frame(x, y1, y2, y3, y4, y5)
+plot_df_melted <- melt(plot_df, id.vars = "x")
+
+```
+
+
+```{r plot}
+# change labels for y1, y2, y3, y4, y5
+plot_df_melted$variable <-
+  factor(as.character(plot_df_melted$variable),
+         levels = c("y1", "y2","y3", "y4", "y5" ),
+         labels = c("shape=1, scale=1","shape=2, scale=1", "shape=3, scale=1", 
+                    "shape=2, scale=2", "shape=2, scale=0.5")
+         )
+
+# step II: plotting
+ggplot(plot_df_melted, aes(x = x, y = value)) +
+  geom_line( aes(color = variable), linewidth = 1) + 
+               labs(x = "x", y = "Density", title = "Gamma densities",
+                    color = "Gamma distribution\nparameters:"
+                    )  # modifyblabels
+
+## multi-pannel
+ggplot(plot_df_melted, aes(x =x, y = value)) +
+  geom_line() +
+  facet_wrap(vars(variable),nrow = 3) +
+  labs(x = "x", y = "Density", title = "Gamma densities")
+
+
+```
+
+# Weibull distribution
+```{r dweibull}
+?dweibull
+# dweibull gives the density, pweibull gives the distribution function, qweibull gives the quantile function, and rweibull generates random deviates.
+g1 <- dweibull(x, shape = 1, scale = 1, log = FALSE)
+g2 <- dweibull(x, shape = 2, scale = 1, log = FALSE)
+g3 <- dweibull(x, shape = 3, scale = 1, log = FALSE)
+g4 <- dweibull(x, shape = 2, scale = 2, log = FALSE)
+
+p2 <- pweibull(1/3, shape = 1, scale = 1, lower.tail = TRUE, log.p = FALSE)
+q2 <- qweibull(0.2834687, shape = 1, scale = 1, lower.tail = TRUE, log.p = FALSE)
+# g4 <- rweibull(n, shape = 1, scale = 1)
+
+p2  # 0.2834687
+q2  # 1/3
+
+```
+
+```{r plot weibull}
+plot_weibull <- data.frame(x, g1, g2, g3, g4)
+plot_weibull_melted <- melt(plot_weibull, id.vars = "x")
+
+ggplot(plot_weibull_melted, aes(x, value )) +
+  geom_line( ) +
+  facet_wrap(vars(variable),nrow = 2) +
+  labs(x = "x", y = "Density", title = "Weibull densities")
+
+
+```
+
+# 山羊汽车问题
+3 doors: one is a car; two are goats
+Solution: the simulation approach
+simulate the average result of winning for 
+(1) choice when you stay
+(2) choice when you switch
+```{r monty hall}
+set.seed(19980415) #set seed allows reproducibility
+R_rep <- 10000 # how many repeats you want to do
+
+# initialize the vectors to store simulated outputs
+result_stay <- rep(NA, R_rep)
+result_switch <- rep(NA, R_rep)
+
+for (i in 1:R_rep){
+  # simulate true car door: which door has the car?
+  door_car <- sample(x = c(1,2,3), size = 1)
+  
+  # simulate true 1st choice: which door is your first attempt?
+  door_choice1 <- sample(x = c(1,2,3), size = 1)
+  
+  # which doors host open (must to be : (1) not the door of my 1st choice; (2) not car door)
+  available_door_host_open <- setdiff(c(1,2,3), c(door_car, door_choice1))
+  # "available_door_host_open" can have 1 or 2 elements;
+  # we always just pull the 1st elements (without affecting anything w.r.t final result)
+  door_host_open <- available_door_host_open[1]
+
+ # my final choice under two strategies
+door_choice_final_stay <- door_choice1
+door_choice_final_switch <- setdiff(c(1,2,3), c(door_host_open, door_choice1))
+
+# save whether I won the car(1) or no(0)
+result_stay[i] <- ifelse(door_choice_final_stay == door_car, 1, 0 )
+result_switch[i] <- ifelse(door_choice_final_switch == door_car, 1, 0)
+}
+
+
+# look at the result
+mean(result_stay)  # 0.3317
+
+mean(result_switch) # 0.6683
+```
+
+
+
+
+
+
