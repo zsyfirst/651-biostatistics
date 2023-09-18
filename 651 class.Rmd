@@ -12,6 +12,22 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 tq<-qexp(seq(0.01,0.99,length=100), 1/5)
 plot(tq)
+
+union(x,y) #求并集
+
+intersect(x,y) #求交集
+
+setdiff(x,y) #求属于x而不属于y的所有元素
+
+setequal(x,y) #判断x与y是否相等
+
+a %in% y #判断a是否为y中的元素
+
+choose(n, k) #n个里面取k个的组合数
+
+combn(x,n) #x中的元素每次取n个的所有组合
+
+combn(x,n,f) #将这些组合用于指定函数f
 ```
 
 # Lecture 1 &2
@@ -120,6 +136,175 @@ lines(1:100,py,col="red",lwd=3)
 
 ```
 
+
+## Probability density function for continuous variable
+What’s the probability that a randomly selected person from this distribution survives more than 6 years?
+f(x) = (e^-x/5)/5
+P(X>=6) = $\int_{0}^{Inf}e^-t/5 /5 dt$
+
+```{r exponential}
+pexp(6, 1/5, lower.tail = FALSE)
+x <- 1:100
+plot (dexp(x,1/5 ))
+pexp(6, 1/5) - pexp(5, 1/5)
+```
+
+Double exponential
+```{r double exponential}
+x <- seq(-5,5,length(101))
+fx <- exp(-abs(x))/2
+plot(x, fx, type = "l", col = "lightblue", lwd = 3,
+     xlab = "error", ylab = "PDF", cex.lab = 1.5,
+     cex.axis = 1.5, col.axis = "blue"
+     )
+```
+consider a more general version of f(.)
+f(x) = $1/2σ e^(-|x-μ|/σ)$
+is this a valid density?
+Plotting double exponentials with mean μ = 2 and σ = 1, 2, 4
+```{r double exponentials μ = 2}
+# construct the empirical pdf from 100 simulated observation
+mu <- 2
+sigma = 2
+# install.packages("vgam")
+# library("vgam")
+y = replace(100, mu, sigma)
+hist(y, breaks = 20, probability = TRUE, xlab = "error")
+
+# Super impose the theoretical pdf
+x=seq(mu-7,mu+7,length=101)
+fx=exp(-abs(x-mu)/sigma)/(2*sigma)
+plot(x,fx,col="orange",lwd=3)
+
+```
+
+# CDF Cumulative distribution function
+
+# Quantile
+What is the 25th percentile of the exponential survival distribution considered before??
+• We want to solve (for x)
+.25 = F(x)
+= 1 − e−x/5
+resulting in the solution x = −log(.75) × 5 ≈ 1.44
+• Therefore, 25% of the subjects from this population live less than 1.44 years
+```{r quantile}
+# R can approximate exponential quantiles for you
+qexp( p = 0.25, 1/5)  # quartile
+qexp( p = 1/3, 1/5)  # tertile
+```
+
+
+# QQ plot
+Calculate the quantiles of an exp(5) distribution
+```{r qq}
+tq<-qexp(seq(0.01,0.99,length=100), 1/5)
+plot(tq)
+```
+
+How do they compare to the empirical quantiles?
+```{r }
+x1<-rexp(30, 1/5)
+x2<-rexp(30, 1/5)
+x3<-rexp(30, 1/5)
+eq1<-quantile(x1,seq(0.01,0.99,length=100))
+eq2<-quantile(x2,seq(0.01,0.99,length=100))
+eq3<-quantile(x3,seq(0.01,0.99,length=100))
+```
+
+Plot theoretical versus empirical quantiles (QQ plots)
+```{r qq plot}
+library(ggplot2)
+data <- data.frame( eq1, eq2, eq3, tq )
+
+library(tidyverse)
+data %>%
+  ggplot() +
+  geom_point(aes(tq, eq1 )) +
+  geom_point(aes(tq,eq2),method = "lm" ) +
+  geom_point(aes(tq, eq3), method = "lm") +
+  labs(x = "theoretical Quantiles", y = "Sample Quantiles")
+
+y <- rt(200, df = 5)
+qqnorm(y, main = "Normal Q-Q Plot",
+       xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+       plot.it = TRUE, datax = FALSE, )
+```
+
+
+# Lecture 3
+
+## Expected values
+E[X] =sum xp(x)
+E[g(X)] =Sum g(x)p(x)
+Suppose that a die is tossed and X is the number face up
+• What is the expected value of X?
+```{r expected value}
+# Simulate the mean of n die rolls
+mx5 <- rep(0, 1000)
+mx10 <- rep(0, 1000) 
+mx20 <- rep(0, 1000)
+mx100 <- rep(0,1000)
+
+for (i in 1:1000) {
+  mx5[i] <- mean(sample(1:6, 5, replace = TRUE)) # 5 die rolls
+  mx10[i] <- mean(sample(1:6, 10, replace = T))  # 10 die rolls
+  mx20[i] <- mean(sample(1:6, 20, replace = T))  # 20 die rolls
+  mx100[i] <- mean(sample(1:6, 100, replace = T)) # 100 die rolls
+}
+
+
+die_roll <- data.frame(mx5, mx10, mx20, mx100)
+ggplot(die_roll) +
+  geom_histogram(aes(mx5))
+
+ggplot(die_roll) +
+  geom_histogram(aes(mx100))
+```
+
+### continuous rndom variable with pdf f(x),
+Expected value = $ \int_x xf(x) dx $
+
+```{r uniform distribution}
+y1<-mean(runif(10000))
+y2<-mean(runif(10000,0,10))
+y3<-mean(runif(10000,-2,15))
+```
+
+```{r Gamma distribution}
+
+
+```
+
+# Lecture 6
+Normal distribution
+```{r normal}
+bx=c(5,2,3) # this is the data
+mu=seq(0,6,length=201) # parameter values
+likep=rep(0,201)
+for (i in 1:201)
+febx2=-sum((bx-mu[i])^2)/2
+likep[i]=exp(ebx2)/((2*pi)^(length(bx)/2))g
+plot(mu,likep,type="l",col="blue",lwd=3)
+mle<-mu[which.max(likep)]
+
+```
+
+
+```{r lecture 6}
+theta=seq(1,10,by=0.1)
+like=1/theta^3*(theta>=5)
+plot(theta,like,type="l",col="blue",lwd=3)
+
+
+like[theta==6]/like[theta==5]
+like[theta==6]/like[theta==4]
+theta[which.max(like)] # maximum likelihood
+liken=like/max(like)
+plot(theta,liken,type="l",col="blue",lwd=3)
+
+
+
+```
 
 
 
