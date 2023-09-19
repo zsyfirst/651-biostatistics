@@ -23,3 +23,35 @@ plot(dweibull(1000, 2, 5 ))
 
 
 ```
+
+## Q4 sensitivity 
+Create a plot of the sensitivity by (1 - specificity), which is the true positive rate versus the false positive rate for all of the cut-offs between 0 and 30. This is called an ROC curve.
+```{r homework 2 Q4}
+library(ggplot2)
+D <- 16
+ND <- 46
+class(D)
+T <- c(2, 3, 10, 24, 43, 62 )
+NT <- c(60,59, 52, 38,  19 , 0)
+
+TP <- c(2, 3, 7, 12, 15, 16)
+TN <- c(46, 46, 46, 43, 34, 18)
+sensitivity <- TP/D
+specificity <- TN/ND
+sensitivity
+specificity
+
+plot( 1-specificity, sensitivity, main = "ROC curve")
+
+prevalence <- D/(D+ND)
+PPV_2 <- (sensitivity*prevalence)/( sensitivity*prevalence + (1-specificity)*(1-prevalence)   )
+PPV <- TP/T
+PPV_2
+PPV
+```
+
+
+
+
+
+
