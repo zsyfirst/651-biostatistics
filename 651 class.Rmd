@@ -275,7 +275,85 @@ y3<-mean(runif(10000,-2,15))
 
 ```
 
+
+# Lecture 4
+### Jensen's inequality
+E[h(x)] >= h(E[x]) if h(x) is convex function (holds water)
+
+### Variance
+var(x) = E[(x-μ)2]  = E[x2]-(E[x])2
+
+```{r variabce}
+x <- seq(-10, 10, length = 201)
+y1 <- dnorm(x)
+y2 <- dnorm(x, 0, 2)
+y3 <- dnorm(x, 0, 4)
+plot(x,y1, type = "l", col = "red", lwd = 3)
+lines(x,y2,col="orange",lwd=3)
+lines(x,y3,col="blue",lwd=3)
+
+# Calculating the sample variance in R
+y <- rnorm(100, 0, 4)
+var(y)
+sd(y)
+mean(y)
+```
+
+## Chebyshev's inequality
+P(|x-μ|>=kσ) <= 1/k2
+
+## Independent events
+P(A unit B) = P(A)P(B)
+Joint Distribution under Independence: f(x1,x2,...,xn) = 累乘fi(xi)
+
+## IID random variables
+In the instance where f1 = f2 = ... = fn we say that the Xi are iid for independent and identically distributed 
+```{r simulating independent discrete variable}
+# IID Bernoulli draws
+x <- rbinom(20, 1, prob = 0.3)
+
+# Independent Bernoulli draws (not indentically distributed)
+bernm<-seq(0,1,by=0.2)
+x<-rbinom(20*length(bernm),1,prob=bernm)
+
+
+# Independent Poisson draws
+x<-rpois(10000,20)
+# Independent Poisson draws (not indentically distributed)
+poism<-c(1,2.5,5,7.5,10,1000)
+x<-rpois(10*length(poism), poism)
+
+# IID Normal draws
+x<-rnorm(1000,mean=2,sd=9)
+# Independent (but not identical) Normal draws
+normm<-1:100
+sdm<-normm/3
+x<-rnorm(150*length(normm),mean=normm,sd=sdm)
+
+```
+
+# joint density for random vector
+The standard normal density is N(0,1)
+Suppose that one draws n independent samples, X1,...Xn from a distribution with the pdf given above
+ What is the joint density of the vector (X1,...Xn)?
+```{r iid joint density}
+# Let's suppose that n = 2 (one makes two independent draws from a standard normal)
+# What is P(X1>=1.5,X2 >=1)?
+probt=(1-pnorm(1.5))*(1-pnorm(1))
+probt
+nsim=100000
+x1=rnorm(nsim)
+x2=rnorm(nsim)
+probs=mean((x1>1.5) & (x2>1))
+probt # display theoretical value
+probs # display simulated value
+abs(probs-probt)/probt
+```
+Monte Carlo methods are incredibly powerful for evaluating probabilities.
+
+
 # Lecture 6
+## likelihood function
 Normal distribution
 ```{r normal}
 bx=c(5,2,3) # this is the data
