@@ -1,0 +1,25 @@
+---
+title: "homework"
+author: "Siyu Zou"
+date: "2023-09-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r homework 1 Q6}
+set.seed(19990318)
+U <- runif(1000, 0, 1)
+gamma = 2
+beta = 5 
+# inverse CDF F^{-1}
+x = (-beta*log(1-U))^(1/gamma)
+hist(U,main = "Uniform")
+hist (x, main =" Simulated Weibull ")
+
+plot(dweibull(1000, 2, 5 ))
+
+
+```
