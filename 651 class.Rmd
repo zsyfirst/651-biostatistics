@@ -385,4 +385,33 @@ plot(theta,liken,type="l",col="blue",lwd=3)
 ```
 
 
+# Lecture 7
+
+```{r binomial}
+# Simulate 15 independent Binomial(10,.2)
+rbinom(15,size=10,prob=0.2)
+
+# Simulate 15 independent Binomial(10,p)
+# First p=0.1, last p=0.9
+rbinom(15,size=10,prob=seq(0.1,0.9,length=15))
+
+# Simulate 15 independent Binomial(n,p)
+# First (n,p)=(1,0.1), last (n,p)=(15,0.9)
+rbinom(15,size=1:15,prob=seq(0.1,0.9,length=15))
+
+```
+
+
+```{r normal distribution}
+# Probability of at most 1 deviation
+pnorm(1)-pnorm(-1)
+# Probability of at most 2 deviation
+pnorm(2)-pnorm(-2)
+# Probability of at most 3 deviation
+pnorm(3)-pnorm(-3)
+
+```
+
+
+
 

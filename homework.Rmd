@@ -20,7 +20,9 @@ hist(U,main = "Uniform")
 hist (x, main =" Simulated Weibull ")
 
 plot(dweibull(1000, 2, 5 ))
-
+# check if X follows a Weibull distribution using a QQ plot
+qqplot(qweibull(x, gamma, beta), x, ylab = "simulated", xlab = "theoretical", main = "Weibull QQ plot")
+qqline (x, distribution = function (p) qweibull (p,gamma , beta ),lty = 2, col = 2, lwd = 3)
 
 ```
 
@@ -28,6 +30,7 @@ plot(dweibull(1000, 2, 5 ))
 Create a plot of the sensitivity by (1 - specificity), which is the true positive rate versus the false positive rate for all of the cut-offs between 0 and 30. This is called an ROC curve.
 ```{r homework 2 Q4}
 library(ggplot2)
+library(tidyverse)
 D <- 16
 ND <- 46
 class(D)
@@ -35,21 +38,186 @@ T <- c(2, 3, 10, 24, 43, 62 )
 NT <- c(60,59, 52, 38,  19 , 0)
 
 TP <- c(2, 3, 7, 12, 15, 16)
-TN <- c(46, 46, 46, 43, 34, 18)
+TN <- c(46, 46, 43, 34, 18, 0)
 sensitivity <- TP/D
 specificity <- TN/ND
-sensitivity
-specificity
 
-plot( 1-specificity, sensitivity, main = "ROC curve")
+plot( 1-specificity, sensitivity, main = "ROC curve", type = "b") 
 
-prevalence <- D/(D+ND)
-PPV_2 <- (sensitivity*prevalence)/( sensitivity*prevalence + (1-specificity)*(1-prevalence)   )
-PPV <- TP/T
-PPV_2
-PPV
+ 1-specificity
+# data <- data.frame(list(TP, TN,sensitivity,specificity  ))
+# data %>%
+#   ggplot(aes(1-specificity, sensitivity)) +
+#   geom_point() +
+#   geom_smooth( method = "gam", se = FALSE ) +
+#   coord_cartesian(xlim = c(0, 1), ylim = c(0,1))
+
+
+prevalence <- seq(0, 1, by = 0.001)
+sensitivity <- 0.75
+specificity <- 34/(12+34)
+PPV <- (sensitivity*prevalence)/( sensitivity*prevalence + (1-specificity)*(1-prevalence) )
+
+plot(prevalence, PPV)
+
+library(riskyr)
+plot_curve (
+  sens = 0.7500,
+  spec =1-0.26086957,
+  prev = NA
+)
+
+
 ```
 
+
+## Q5
+
+```{r Q5}
+# Simulate the mean of different n keys 
+key_no_replace <- rep(0, 1000) # 1000 keys
+key_replace <- rep(0, 1000)
+
+Key_rep <- 10000 # how many repeats you want to do
+
+# First, sampling without replacement
+for (i in 1:Key_rep){
+  # simulate true key number
+  key_no_replace[i] <- sample(x = key, size = 1, replace = FALSE)
+}
+
+mean( key_no_replace )
+
+# Second, sampling with replacement
+for (i in 1:Key_rep){
+  # simulate true key number
+  key_replace[i] <- sample(x = key, size = 1, replace = T)
+}
+summary(key_replace)
+
+```
+### Without replacement
+```{r Q5 simulating}
+# without replacement
+ntrail = 1000
+results = vector()
+
+for (i in 1:ntrail) {
+  select_key = sample(1:1000, 1, replace = FALSE)
+  right_key = sample(1:1000, 1, replace = FALSE)
+  select_list = c()
+  count = 1
+  all_keys = 1:1000
+  while (select_key != right_key) {
+    count = count  + 1
+    select_list = append(select_list, select_key)
+    remaining_keys = setdiff(all_keys, c(select_list, select_key))
+    if (length(remaining_keys) == 0) {
+      break
+    }
+    select_key = sample(remaining_keys, 1, replace = FALSE)
+  }
+  results[i] = count
+}
+
+mean(results)
+results
+```
+
+### With replacement
+```{r with replacement}
+ntrail = 1000
+results = vector()
+  
+for (i in 1:ntrail) {
+  select_key = sample(1:1000, 1, replace = TRUE)
+  right_key = sample(1:1000, 1, replace = TRUE)
+  count = 1
+  all_keys = 1000
+  while (select_key != right_key) {
+    count = count  + 1
+    select_key = sample(1:1000, 1, replace = TRUE)
+    right_key = sample(1:1000, 1, replace = TRUE)
+  }
+  results[i] = count
+}
+
+mean(results)
+```
+
+## Q10
+In R produces 1,000 averages of 10 die rolls. That is, it’s like taking ten dice, rolling them, averaging the results and repeating this 1,000 times
+```{r Q10}
+set.seed(19980415)
+temp <- matrix(sample(1 : 6, 1000 * 10, replace = TRUE), 1000)
+xBar <- apply(temp, 1, mean)
+hist(xBar, xlab="Sample Average", main="Average of 10 die rolls")
+
+```
+
+b. The expected value of sample averages of iid random variables is approximately equal to the expectation for a single die roll. Thus, we expect the mean to be close to 3.5 as this is the expectation for a single die roll.
+
+```{r Q10 b}
+mean(xBar)
+
+```
+c. Since the variance of a single die roll is 2.92, we expect the variance of the sample average of 10 dice rolls to be 2.92/100 , thus the standard deviation of these sample means should be approximately sqrt(2.92/10) = 0.54
+
+sd(xBar)
+
+
+
+## Q11
+Problem 11. (Practice)
+You are playing a game with a friend where you flip a coin and if it comes up heads you give her a dollar and if it comes up tails she gives you a dollar. You play the game ten times.
+a. What is the expected total earnings for you? (Show your work; state your assumptions.)
+b. What is the variance of your total earnings? (Show your work; state your assumptions.)
+c. Suppose that the coin is biased and you have a .4 chance of winning for each flip. Repeat the calculations in parts a and b
+d. Suppose each of you has $10 when you start the game. The game is played indefinitely until one person loses all of their money. Write R code to simulate this game. Calculate the expected duration of the game, i.e. on average how long (how many flips) will the game last?
+
+```{r Q11}
+results_list = list() ##list initialization
+for (p in seq(.1,.9,.1)){
+  ntry = 1000
+  results = vector()
+  for (i in 1:ntry){
+    a = 10
+    b = 10
+    count = 0
+    while (a>0 & b>0){
+      flip = rbinom(1, 1, p)
+      if (flip == 1){a=a+1;b=b-1}
+      if (flip == 0){a=a-1;b=b+1}
+      count = count + 1
+      }
+    results[i] = count
+  }
+results_list[[toString(p)]] = results
+}
+
+library(reshape2)
+results_df = do.call(cbind.data.frame,results_list)
+results_df %>% 
+  melt(id.vars=NULL) %>% 
+  ggplot(aes(x=value)) +
+  geom_histogram(bins = 15) +
+  facet_wrap(vars(variable),nrow = 3,scales = "free_x") +
+  theme_bw(base_size = 12)+
+  labs(x='Expected duration of the game')
+
+apply(results_df,2,summary)
+```
+
+
+## Q12
+Note that the code xBar <- apply(matrix(runif (1000 ∗ 10), 1000), 1, mean) produces 1,000 averages of 10 uniforms.
+```{r Q12}
+xBar <- apply(matrix(runif (1000 * 10), 1000), 1, mean)
+xBar
+runif (1000 * 10)
+matrix(runif (1000 * 10), 1000)   # 1000 row * 10 col, nrow = 1000
+hist(xBar, xlab="Sample Average", main="Average of 10 Uniform RV")
+```
 
 
 
