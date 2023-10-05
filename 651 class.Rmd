@@ -414,4 +414,12 @@ pnorm(3)-pnorm(-3)
 
 
 
+# Lecture 8 
+
+
+
+
+
+
+
 

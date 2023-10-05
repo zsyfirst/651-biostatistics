@@ -1,0 +1,194 @@
+---
+title: "651 homework"
+author: "Siyu Zou"
+date: "2023-09-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Homework 3
+## Q1 plot the likelihood associated with the experiment, renormalize the likelihood so that its maximum is one.
+```{r}
+p <- seq(0,1,by=0.01)
+likelihood <- choose(10,7)*p^7*(1-p)^3
+likelihood.norm <- likelihood/max(likelihood) 
+plot( p, likelihood.norm, type = "b"  )
+
+choose(10,7)*0.5^10 + choose(10,8)*0.5^10 + choose(10,9)*0.5^10 + choose(10,10)*0.5^10
+
+p <- seq(0,1,by=0.01)
+likelihood_2 <- choose(9,2)*(1-p)^3*p^7
+likelihood.norm2 <- likelihood_2/max(likelihood_2) 
+plot( p, likelihood.norm2, type = "b"  )
+
+1- ( 0.5^3 + choose(3,2)*0.5^4 + choose(4,2)*0.5^5 + choose(5,2)*0.5^6 + choose(6,2)*0.5^7 + choose(7,2)*0.5^8 + choose(8,2)*0.5^9 )
+
+```
+
+```{r Q2}
+#a. 5/6
+pnorm(5/6)
+
+#b. What DBP represents the 90th, 95th and 97.5th percentiles of normal distribution
+qnorm(0.90)
+12*qnorm(0.90) + 80
+qnorm(0.95)
+12*qnorm(0.95) + 80
+qnorm(0.975)
+12*qnorm(0.975) + 80
+
+# c. 
+pnorm(1, lower.tail = FALSE)
+pnorm(2, lower.tail = FALSE)
+pnorm(3, lower.tail = FALSE)
+
+# d Suppose that 10 people are sampled from this population. What’s the probability that 50% (5) of them have a SBP larger than 140?
+pnorm(20/11)
+pnorm(20/11, lower.tail = FALSE)
+
+choose(10,5)*(pnorm(20/11))^5 * (1-pnorm(20/11))^5
+choose(10,5)*0.9655^5 * 0.0345^5
+252 * 0.8389989 * 0.0345^5
+
+choose(1000,500)*0.9655^500 * 0.0345^500
+
+
+# f 
+0.0345* (1-0.7976)
+
+# g
+(81.3-80)/12*sqrt(200)
+pnorm(1.532065)
+
+(81.3-120)/11*sqrt(200)
+pnorm((81.3-120)/11*sqrt(200))
+
+```
+
+
+```{r Q3}
+rexp(1000, 1)
+mean(rexp(1000, 1))
+var(rexp(1000, 1))
+
+# x <- seq(0,5,length = 1000)
+# y <- mean(rexp(1000,1))
+# n <- 1000
+```
+
+# Retain the same 1,000 observations from part a. Plot the sequential sample means by observation number. Explain the resulting plot.
+```{r}
+# example
+x1=rbinom(100,1,0.5)
+x2=rbinom(100,1,0.5)
+x3=rbinom(100,1,0.5)
+xbar1=cumsum(x1)/(1:100)
+xbar2=cumsum(x2)/(1:100)
+xbar3=cumsum(x3)/(1:100)
+plot(xbar1)
+
+set.seed(19990318)
+sample_size <- 1000
+sample_data <- rexp(sample_size, 1)
+sequence_mean <- cumsum(sample_data)/(1:1000)
+plot(1:sample_size, sequence_mean, type = "l", col = "blue",
+     xlab = "Observation Number", ylab = "Sequential Sample Mean",
+     main = "Sequential Sample Means")
+
+
+## Same like above
+sample_size <- 1000
+sample_data <- rexp(sample_size, 1)
+
+# Initialize a vector to store sample means
+sample_means <- sequence( 1000 ,0, 0)
+sequential_means <- numeric(sample_size)
+total <- 0
+# Calculate the sequential sample means
+for (i in 1:1000) {
+  total <- total + sample_data[i]
+  sample_means[i] <- total / i
+  sequential_means[i] <- sample_means[i]
+}
+# Create a plot of sequential sample means by observation number
+plot(1:sample_size, sequential_means, type = "l", col = "blue",
+     xlab = "Observation Number", ylab = "Sequential Sample Mean",
+     main = "Sequential Sample Means")
+
+# Add a horizontal line at the population mean for reference
+abline(h = 1, col = "red", lty = 2)
+
+# Add a legend
+legend("topright", legend = c("Sample Means", "Population Mean"),
+       col = c("blue", "red"), lty = c(1, 2))
+
+```
+
+
+Plot a histogram of the 1, 000 numbers. Does it look like a exponential density?
+```{r c}
+hist(sequence_mean, prob = T, breaks = 100)
+```
+
+d. Now sample 1,000 sample means from this distribution, each comprised of 100 observations. What numbers should the average and variance of these 1,000 numbers be equal to and why?
+
+```{r Q3 d e}
+sample_data <- numeric(1000)
+
+for (i in 1:1000) {
+  sample_data[i] = mean(rexp(100,1))
+}
+
+mean <- mean(sample_data)
+variance <- var(sample_data)
+
+# plot(1:1000, mean)
+hist( sample_data, prob = T, breaks = 35 )
+```
+
+Now sample 1,000 sample variances from this distribution, each comprised of 100
+observations. Take the average of these 1, 000 variances. What property does
+this illustrate and how?
+```{r Q3 f}
+sample_variance <- numeric(1000)
+
+for (i in 1:1000) {
+  sample_variance[i] = var(rexp(100,1))
+}
+
+mean <- mean(sample_variance)
+variance <- var(sample_variance)
+
+# plot(1:1000, mean)
+hist( sample_variance, prob = T, breaks = 35 )
+```
+
+```{r Q5 d}
+library(ggplot2)
+beta <- seq(0, 5, by = 0.1)
+data <- c(2.0, 1.5, 1.0, 1.2, 1.3, 4.4, 1.0, 4.9, 1.5, 1.2) # observed values
+likelihood <- beta^10 / ( cumprod(data)[10]^(beta+1)) 
+
+likelihood.norm <- likelihood/max(likelihood) # easier to interpret
+
+ggplot(data.frame(beta, likelihood.norm), aes(x = beta, y = likelihood.norm)) +
+  geom_line() + 
+  labs(title = "Likelihood of Pareto Distribution", x = "Beta", y = "Normalized Likelihood") + 
+  theme_bw()
+
+# Identify reference lines
+# r8 <- beta[range(which(likelihood.norm > 1/8))] 
+# r16 <- beta[range(which(likelihood.norm > 1/16))]
+
+#   geom_vline(xintercept = r8, color = 'red', linetype = 'dashed')+
+#   geom_vline(xintercept = r16, color = 'blue', linetype = 'dashed') +
+
+
+```
+
+
+
+
