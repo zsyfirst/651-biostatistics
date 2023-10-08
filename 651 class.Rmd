@@ -116,11 +116,50 @@ rbinom(15,size=1:15,prob=seq(0.1,0.9,length=15))  # 1-15个硬币（size），�
 Suppose a man has 8 children, 7 of which are girls and none are twins
  If each gender has an independent 50% probability for each birth, what's the probability of getting 7 or more girls out of 8 births?
 ```{r}
-pbinom(6, 8, 0.5, lower.tail = FALSE)
+# distribution function
+pbinom(6, 8, 0.5, lower.tail = FALSE)  # cdf (cumulative distribution)
+
+# density function
+dbinom(6,8,0.5)  # pmf, pdf (density)
+choose(8,6)*0.5^8
+
+# quantile function 
+# qbinom(p, size, prob, lower.tail = TRUE, log.p = FALSE) 
 ```
 This calculation is an example of a p-value: the probability, under the null hypothesis, of getting a result as extreme or more extreme than the one actually obtained. 
+The p-value or probability value is the probability of obtaining test results at least as extreme as the results actually observed during the test, assuming that the null hypothesis is correct.
 
+# Normal distribution
+```{r}
+# Probability of at most 1σ eviation
+pnorm(1)-pnorm(-1)  # 0.68
+# Probability of at most 2σ deviation
+pnorm(2)-pnorm(-2)  # 0.954
+# Probability of at most 3σdeviation
+pnorm(3)-pnorm(-3)  # 0.997
 
+pnorm(-1.28, mean = 0, sd = 1, lower.tail = TRUE)  # 10th percentiles
+pnorm(-1.645, mean = 0, sd = 1, lower.tail = TRUE)  # 5th percentiles
+pnorm(-1.96, mean = 0, sd = 1, lower.tail = TRUE)  # 2.5th percentiles
+pnorm(-2.33, mean = 0, sd = 1, lower.tail = TRUE)  # 1th percentiles
+
+# symmetry
+pnorm(1.28, mean = 0, sd = 1, lower.tail = TRUE)  # 90th percentiles
+pnorm(1.645, mean = 0, sd = 1, lower.tail = TRUE)  # 95th percentiles
+pnorm(1.96, mean = 0, sd = 1, lower.tail = TRUE)  # 97.5th percentiles
+pnorm(2.33, mean = 0, sd = 1, lower.tail = TRUE)  # 99th percentiles
+
+```
+
+What is the 95th percentile of a N(μ,σ2) distribution?
+```{r qnorm}
+qnorm(0.10, mean = 0, sd = 1)  # 10% percentile's x = -1.28
+qnorm(0.90,mean = 0, sd = 1 )  # 90% percentile' x = 1.28
+qnorm(0.95,mean = 0, sd = 1 )  # 90% percentile' x = 1.645
+qnorm(0.975,mean = 0, sd = 1 )  # 90% percentile' x = 1.96
+qnorm(0.99,mean = 0, sd = 1 )  # 90% percentile' x = 2.33
+
+```
 
 ### Poisson
 ```{r Poisson example}
@@ -432,7 +471,71 @@ pnorm(3)-pnorm(-3)
 
 
 
-# Lecture 8 
+# Lecture 8 Law of Large Numbers, Central Limit Theorem
+Generating sequences of means:
+n -> unlimited, so P( |(xn)̅ -μ| >ε ) ≤ 0
+```{r Limit of sequence}
+x1=rbinom(1000,1,0.5)
+xbar1=cumsum(x1)/(1:1000)
+y1 = xbar1 - mean(x1)
+plot(1:1000, y1, type = "l", col = "blue",
+     xlab = "Number of trials", ylab = "Distance to the mean",
+     main = "Sequences of Sample Means")
+```
+
+## convergence of transformed data
+Does WLLN work for Cauchy?
+```{r Cauchy}
+n <- 10000
+mu <- 3
+x <- rcauchy( n, mu )
+cmean <- cumsum(x)/(1:n)
+plot(1:n, cmean, type="l")
+abline(h=mu)
+
+```
+
+# central limit theorem
+Assume that X1, . . . ,Xn are iid with an exp(1) distribution
+f (x) = exp(−x) for x > 0
+• E[Xi ] = 1, Var(X) = 1
+• Let Xn拔 = 1/nΣXi
+• Simulate Xn拔 for n = 3, n = 30 and plot
+• Show histograms of Xn拔 and Zn
+
+```{r simulation exponential}
+x <- seq(0,5,length=101)
+h <- dexp(x, rate = 1)
+n = c(3, 30)
+mx = matrix(rep(0,2000), ncol = 2)
+
+for (i in 1:1000) {
+  mx[i,1] = mean(rexp(n[1], rate = 1))
+  mx[i,2] = mean(rexp(n[2], rate = 1))
+}
+
+plot(x, h, type = "l", col = "lightblue", lwd = 3,
+     ylim = c(0,2.5))
+hist(mx[,1],prob = T, add = T, col=rgb(0,0,1,1/4), breaks = 25)
+hist(mx[,2],prob = T, add = T, col=rgb(1,0,1,1/4), breaks = 25)
+
+```
+
+### R simulations: exponential Z-score
+Zn = (Xn拔-1)/(1/sqrt(n)) = sqrt(n)*(xn拔-1)
+```{r z-normalized}
+zx= mx 
+for (j in 1:2) {
+  zx[,j]<-sqrt(n[j])*(mx[,j]-1)
+  }
+xx=seq(-3,3,length=101)
+yx=dnorm(xx)
+plot(xx,yx,type="l",col="blue",lwd=3)
+hist(zx[,1],prob=T,add=T,col=rgb(0,0,1,1/4),breaks=50)
+hist(zx[,2],prob=T,add=T,col=rgb(1,0,0,1/4),breaks=50)
+```
+
+
 
 
 
