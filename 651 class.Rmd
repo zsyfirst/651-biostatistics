@@ -30,7 +30,7 @@ combn(x,n) #x中的元素每次取n个的所有组合
 combn(x,n,f) #将这些组合用于指定函数f
 ```
 
-# Lecture 1 &2
+# Lecture 1 & 2
 ## Probability calculus
 ```{r birthday problem}
 n=1:364
@@ -89,20 +89,38 @@ the answer is in Lab 2 notes
 
 ## Probability mass function (PMF) for discrete variable
 
-### Bernoulli
+### Bernoulli & Binomial (sum of Bernoulli)
 ```{r Bernoulli example}
 ?rbinom
+# rbinom(n, size, prob)
+# n: number of observations. If length(n) >1, the length is taken to be the number required.
+# size: number of trails (0 or more)
 # Let X be the result of a single coin flip where X = 0 represents tails and X = 1 represents heads
 
-# for x = 1, 1个硬币(size), 抛20次(n)，每次概率0.5 (p)
-rbinom(20,1,0.5)
+# Bernoulli: 1次实验
+rbinom(1,1,0.5)
+rbinom(20, 1, 0.3) #  1个硬币(size), 抛20次(n)，每次概率0.3 (p)
+rbinom(20,1,seq(0,1,length=20))  #  1个硬币(size), 抛20次(n)，每次概率 从0到1增加 (p)
 
-rbinom(20, 1, 0.3)
-
-rbinom(20,1,seq(0,1,length=20))
-seq(0,1,length=20)
-
+# Binomial : n 次Bernoulli实验， size：总共多少个硬币
+# Simulate 15 independent Binomial(10,.2)
+rbinom(15,size=10,prob=0.2)  # 10个硬币（size），抛15次（n），每次概率0.2
+# Simulate 15 independent Binomial(10,p)
+# First p=0.1, last p=0.9
+rbinom(15,size=10,prob=seq(0.1,0.9,length=15))
+# Simulate 15 independent Binomial(n,p)
+# First (n,p)=(1,0.1), last (n,p)=(15,0.9)
+rbinom(15,size=1:15,prob=seq(0.1,0.9,length=15))  # 1-15个硬币（size），抛15次（n），每次概率0.1-0.9
 ```
+
+Suppose a man has 8 children, 7 of which are girls and none are twins
+ If each gender has an independent 50% probability for each birth, what's the probability of getting 7 or more girls out of 8 births?
+```{r}
+pbinom(6, 8, 0.5, lower.tail = FALSE)
+```
+This calculation is an example of a p-value: the probability, under the null hypothesis, of getting a result as extreme or more extreme than the one actually obtained. 
+
+
 
 ### Poisson
 ```{r Poisson example}
