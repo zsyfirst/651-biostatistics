@@ -44,6 +44,33 @@ sqrt( Sx^2/nx + Sy^2/ny)
 Equal variance
 ## pooled variance estimator
 ```{r pooled variance estimator}
+alpha = 0.05
+nx = 100
+ny = 74
+Sx = 35.6
+Sy = 17.3
+
+Sp2 = ( (nx-1)*Sx^2 + (ny-1)*Sy^2 ) / (nx + ny -2)
+t = qt(1-alpha/2, nx+ny-2)
+
+Xa = 207
+Xd = 193.4
+Xa-Xd + t*sqrt(Sp2)*sqrt(1/nx + 1/ny)
+Xa-Xd - t*sqrt(Sp2)*sqrt(1/nx + 1/ny)
+
+# 
+(Xa-Xd )/ ( sqrt(Sp2)*sqrt(1/nx + 1/ny) )
+
+#
+
+# P-value
+Tobs = (Xa-Xd )/ ( sqrt(Sp2)*sqrt(1/nx + 1/ny) )
+2*pt( -Tobs, nx+ny-2 )
+```
+
+Equal variance
+## pooled variance estimator
+```{r pooled variance estimator}
 Sp2 = ( (nx-1)*Sx^2 + (ny-1)*Sy^2 ) / (nx + ny -2)
 t = qt(1-alpha/2, nx+ny-2)
 
@@ -199,17 +226,55 @@ proportion  # Proportions of times where P <= 0.05 for different scenarios
 
 
 
-# BOOK P364
+# homework 4  Q7
+## paired
 ```{r}
-y <- 63.5
-x <- 59.6
-Sx <- 
+fev1 <- c(3.22, 4.06, 3.85, 3.50, 2.80, 3.25, 4.20, 3.05, 2.86, 3.50)
+fev2 <- c(2.95, 3.75, 4.00, 3.42, 2.77, 3.20, 3.90, 2.76, 2.75, 3.32)
+diff <- fev2 - fev1
+t.test(diff)
 
+# paired t-test 公式 计算95%CI
+mean <- mean(diff)
+sd <- sd(diff)
+mean + qt(0.975, df = 10-1) * sd /sqrt(10)
+mean - qt(0.975, df = 10-1) * sd /sqrt(10)
+
+# P-value
+Tobs = mean/sd*sqrt(10)
+2*pt( Tobs, 10-1 )
+
+# likelihood function for variance of the change
 
 ```
 
 
+# Q8 
+## F test
+```{r f test}
+alpha = 0.05
+nx = 16
+ny = 16
+Sx = 28
+Sy = 20
+qf(1-alpha/2, nx-1, ny-1) * Sy^2/Sx^2
+qf(alpha/2, nx-1, ny-1)* Sy^2/Sx^2
 
+sqrt( Sx^2/nx + Sy^2/ny)
+```
+Equal variance
+## pooled variance estimator
+```{r pooled variance estimator}
+Sp2 = ( (nx-1)*Sx^2 + (ny-1)*Sy^2 ) / (nx + ny -2)
+t = qt(1-alpha/2, nx+ny-2)
+
+Y = 11
+X = 4
+Y-X + t*sqrt(Sp2)*sqrt(1/nx + 1/ny)
+Y-X - t*sqrt(Sp2)*sqrt(1/nx + 1/ny)
+
+
+```
 
 
 
