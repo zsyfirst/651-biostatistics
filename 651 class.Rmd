@@ -537,6 +537,336 @@ hist(zx[,2],prob=T,add=T,col=rgb(1,0,0,1/4),breaks=50)
 
 
 
+# Lecture 9
+```{r}
+##quantiles of a chi-square distribution
+df = 4
+alpha <- .05
+qchisq(c(alpha/2, 1 - alpha/2), df)
+
+qchisq(0.025, df=4)  
+qchisq(0.975, df=4)
+
+qchisq(0.025, df=512)  
+qchisq(0.975, df=512)
+```
+
+A recent study *513* of organo-lead manufacturing workers reported an average total brain volume of 1, 150.315cm3 with a *standard deviation* of 105.977. Assuming normality of the underlying measurements, calculate a confidence interval for the population variation in total brain volume
+```{r}
+n <- 513
+miu <- 1150.315
+s2 <- 105.977^2
+a <- 0.05
+quantile <- qchisq( c(a/2, 1-a/2), df = n-1  )
+CI <- c( (n-1)*s2/quantile[1], (n-1)*s2/quantile[2] )
+CI
+(n-1)*s2/rev(quantile)
+```
+
+
+(n-1)S^2 follows a gamma distribution with shape (n-1)/2 and scale σ2/2
+Therefore, this can be used to plot a likelihood function for σ2
+```{r likelihood sigma}
+n <- 100
+s2 <- 16
+sigmaVals <- seq(5, 15, length = 1000)
+likeVals <- dgamma((n - 1) * s2, shape = (n - 1)/2, scale = sigmaVals^2/2)
+likeVals <- likeVals / max(likeVals)
+plot(sigmaVals, likeVals, type = "l")
+lines(range(sigmaVals[likeVals >= 1 / 8]),
+c(1 / 8, 1 / 8))
+lines(range(sigmaVals[likeVals >= 1 / 16]),
+c(1 / 16, 1 / 16))
+```
+
+# t quantiles
+```{r}
+##quantiles of a t distribution
+n=c(1,2,5,10)
+alpha <- .05
+c(qt(1-alpha/2,n),qnorm(1-alpha/2))
+qt(1-alpha/2,n)
+qnorm(1-alpha/2)
+```
+results start to close to normal distribution, wiht the df increases
+
+
+```{r example t distribution}
+n <- 16
+alpha <- 0.05
+qt(1-alpha,n)
+
+qt(1-alpha/2,n)
+?qf
+```
+In R typing data(sleep) brings up the sleep data originally
+analyzed in Gosset’s Biometrika paper, which shows the
+increase in hours of sleep for 10 patients on two soporific drugs.
+R treats the data as two groups rather than paired.
+```{r}
+alpha <- 0.05
+qt(1-alpha/2, df= 10)
+1.67+ 2.228139*1.13/sqrt(10)
+1.67- 2.228139*1.13/sqrt(10)
+
+data(sleep)
+g1 <- sleep$extra[1 : 10]
+g2 <- sleep$extra[11 : 20]
+difference <- g2 - g1
+mn <- mean(difference)#1.67
+s <- sd(difference)#1.13
+n <- 10
+mn + qt(c(.025, .975), n-1) * s / sqrt(n)
+t.test(difference)$conf.int
+[1] 0.7001142 2.4598858
+# excludes 0
+```
+
+## the non-central t distribution
+
+non-central t~√n*Xba/S with non-centrality parameter√nμ/σ
+
+```{r}
+n<-1000
+s = 10
+mn = 20
+tStat <- sqrt(n)*mn / s
+esVals <- seq(0,1,length=1000)
+likeVals <- dt(tStat,n-1,ncp = sqrt(n)*esVals)
+nom_likeVals <- likeVals/max(likeVals)
+plot(esVals,likeVals,type = "1")
+lines(range(esVals[nom_likeVals>1/8]),c(1/8,1/8) )
+
+```
+
+
+# Lecture 10
+# Independent group t confidence intervals
+1. Independent 
+2. equal varince
+pooled variance estimator: is a good estimater of σ2
+Sp^2 = {(nx-1)Sx^2 + (ny-1)Sy^2}/(nx+ny-2)
+We know that (n − 1)S^2/σ2 ∼ χ2(n−1)
+So (nx + ny − 2)Sp^2/σ2  ∼ χ2(nx + ny -2)
+
+```{r t test}
+# Confidence interval
+alpha = 0.05
+nx = 10
+ny = 10
+Sx = 9.5
+Sy = 11.5
+μx = 59.6
+μy =  63.5
+Sp =sqrt( ((nx-1)*Sx^2 + (ny-1)*Sy^2) /(nx + ny -2) )
+t = qt(1-alpha/2, nx+ny-2)
+CI <- c((μx-μy)+t*Sp*sqrt(1/nx+1/ny),   (μx-μy)- t*Sp*sqrt(1/nx+1/ny))
+ CI 
+```
+
+## P value
+```{r}
+Tobs <- (μy-μx)/(Sp*sqrt(1/nx+1/ny))
+Tobs
+Pvalue <- 2*pt(-Tobs, 18)
+```
+
+
+
+## Unequal vriance
+two options:
+• Test whether σ2x = σ2y ; apply the previous methods if this hypothesis is not rejected
+• Develop a new test which does not assume σ2x = σ2y
+```{r}
+ux = 132.6
+uy = 127.4
+Sx = 15.34
+Sy = 18.23
+nx = 8
+ny = 21
+point_estimate <- (Sx^2/(nx-1))/(Sy^2/(ny-1))
+
+qf(1-alpha/2,nx-1,ny-1)
+Sx^2/Sy^2 * qf(1-alpha/2,nx-1,ny-1)
+Sx^2/Sy^2 * qf(alpha/2,nx-1,ny-1)
+```
+
+### General formula
+t.test(x, ...)
+#### Default S3 method:
+t.test(x, y = NULL,
+alternative = c("two.sided","less","greater"),
+mu = 0, paired = FALSE, var.equal = FALSE,
+conf.level = 0.95, ...)
+
+• One sample t-test (e.g. H0 : μ = u0 )
+• Two sample t-test (e.g. H0 : μX = μY )
+• Alternative hypotheses (e.g. HA : μX ̸= μY or HA : μX < μY or HA : μX > μY )
+
+```{r One sample t-test}
+x<-1:10
+t.test(x,alternative="two.sided",mu=2)
+```
+
+```{r Two sample t-test: equal variance}
+x<-1:10
+y<-c(7:20)
+t.test(x,y,alternative="less",var.equal = TRUE)
+```
+
+### Unequal variance: Welch Two Sample t-test
+```{r Two sample t-test: unequal variance}
+t.test(extra ~ group, data = sleep)
+```
+data: extra by group
+t = -1.8608, df = 17.776, p-value = 0.07939
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval: -3.3654832 0.2054832
+sample estimates:
+mean in group 1 mean in group 2
+  0.75                  2.33
+
+### Paired two sample t-test
+```{r Paired two sample t-test}
+t.test(extra ~ group, paired=TRUE, data = sleep)
+```
+data: extra by group
+t = -4.0621, df = 9, p-value = 0.002833
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:-2.4598858 -0.7001142
+sample estimates:
+mean of the differences
+      -1.58
+### Paired two sample t-test: Prior-Post 
+```{r}
+extra=sleep$extra
+group=sleep$group
+before=extra[group == 1]
+after=extra[group == 2]
+t.test(before, after, paired=TRUE)
+```
+
+
+# Lecture 11
+## Normality
+Assessing normality is both easy and hard
+## 1. QQ plot
+You plot theoretical normal quantile on the X-axis
+You plot empirical data quantile on the Y-axis, which is
+data sorted in ascending order: y(1), ..., y(n)  (y1 is the minimum one)
+
+Unless something is egregiously eye-catching, we would assume normality
+```{r qq plot}
+data(faithful)
+par(mfrow=c(1,2))
+with(faithful, qqnorm(eruptions, main="Eruption duration") )
+with(faithful, qqline(eruptions))
+with(faithful, qqnorm(waiting, main="Waiting time (min)"))
+with(faithful, qqline(waiting))
+```
+
+## 2. Kernel Density Plo
+It only works when there is sufficient data (e.g., 30 or more)
+Unless it is egregiously non-normal (e.g., skewed, bimodal,ceiling/floor), we would assume normality
+• A key control parameter is *bandwidth*, which may need to be tweaked
+```{r kernel density plot}
+data(faithful)
+par(mfrow=c(1,2))
+plot(density(faithful$eruptions), main="Eruption duration")
+plot(density(faithful$waiting), main="Waiting time (min)")
+    
+# Using a different bandwidth estimator
+plot(density(faithful$eruptions, bw="SJ"), main="Eruption duration")
+plot(density(faithful$waiting, bw="SJ"), main="Waiting time (min)")
+```
+
+## 3. Shapiro-Wilk Test
+Most powerful (in a technical sense) and widely used test
+• Sort the data: Y(1) < Y(2), ..., < Y(n)
+Y(i) is the i-th order statistics
+ai are obtained from expectations and covariance of {Y(1), · · · , Y(n)}
+• 0 ≤ W ≤ 1; Null is rejected for smaller values of W
+• close to 1: normal
+(W is not percent, 0.9 does not means good fit to normal)
+```{r Shapiro-Wilk test}
+data(faithful)
+shapiro.test(faithful$eruptions)
+
+# t-dist with df=5 and 50
+y <- matrix(rt(200, df=c(5,50)), 100, 2, byrow = TRUE)
+apply(y, 2, shapiro.test)
+```
+
+
+# Lecture 12
+## Negative Binomial distribution
+
+X: x number of trails are needed to get n successes
+n: number of successes;
+X ∼ NB(n, p)
+Y: number of failures;
+Y ∼ NB(n, p)
+P(X = x) = choose(x-1, n-1) * p^n *(1-p)^(x-n)
+E(X) = n/p ; Var(X) = n(1−p)/p2
+
+P(Y = y) = P(X = n + y) = choose(n+y−1, n−1)*p^n(1 − p)^y
+
+### pnbinom(q, size, prob, mu, lower.tail = TRUE, log.p = FALSE)
+q: vector of quantiles (y, number of failure)
+size: number of successes （n）
+prob: probability of success in each trail
+```{r NB}
+pnbinom(4,5,0.7)  # P(Y <= 4) , successes = 5, prob of success = 0.7
+
+choose(8,4)*0.7^5*0.3^4  + choose(7,4)*0.7^5*0.3^3 + choose(6,4)*0.7^5*0.3^2 + choose(5,4)*0.7^5*0.3^1 + choose(4,4)*0.7^5*0.3^0
+```
+## P-value and Significance Levels of Negative Binormal
+## Generalized Likelihood Ratio method
+Finding the Critical Region for NB(n, p0)
+```{r}
+NB_LR.k <- function(x, n, k){
+# compute the log-likelihood ratio: LLR = log(L(p=0.5)/L_max)
+# also compute LLR - log(k) so we can find critical region where LR <= 
+  xlgx <- ifelse(x==0, 0, x*log(x))
+- log(k) + (n+x)*(log(n+x) - log(2*n)) - xlgx + x*log(n)
+}
+
+cr.nb <- function(n, kvals=1/(5:10)){
+crmat <- matrix(NA, length(kvals), 4)
+i <- 0
+for (k in kvals){
+i <- i+1
+xmin <- nleqslv(1, NB_LR.k, n=n, k=k)$x
+xmax <- nleqslv(n+1, NB_LR.k, n=n, k=k)$x
+cr <- c(floor(xmin), ceiling(xmax)) # integers
+alpha <- pnbinom(cr[1],n,0.5) + pnbinom(cr[2]-1,n,0.5, lower=FALSE)
+crmat[i,] <- c(signif(k,3), cr, signif(alpha,3))
+}
+colnames(crmat) <- c("1/k", "cr.lower", "cr.upper", "sig-Level")
+return(crmat)
+}
+```
+
+### Critical Region for NB(n = 17, p0 = 0.5)
+```{r}
+# install.packages("nleqslv")
+library(nleqslv)
+n <- 17
+kvals <- 1/(5:9)
+cr.nb(n, kvals) # critical regions for different k
+```
+
+### Comparison with qnbinom()
+```{r}
+soln <- c(qnbinom(.025,n,0.5), qnbinom(.975,n,0.5))
+print(soln)
+# install.packages("sig.level")
+library(sig.level)
+sig.level(soln, n, 0.5) # significance level > 0.05!
+```
+
+
+
 
 
 
